@@ -80,7 +80,7 @@ prob_nosurv_prem_detect <- 0
 # Budget. The max number of trees that the budget will allow to be removed 
 # per year. This is the simplistic beginning, assuming all trees cost the same.
 # This could be elaborated into a cost function and total budget if warranted.
-max_trees_removed_per_year <- 10000000
+max_trees_removed_per_year <- 100000000
 #-----------------------------------------------------------------------------#
 
 
@@ -108,7 +108,8 @@ cellsize <- 100 * 3.28084 # convert to feet
 # Load and prepare data
 #-----------------------------------------------------------------------------#
 setwd(working_directory)
-tree_dat <- readRDS("LI_trees_simcell100.rds")
+#tree_dat <- readRDS("LI_trees_simcell100.rds")
+tree_dat <- readRDS("SimTrees.rds")
 tree_dat$uid <- 1:nrow(tree_dat)
 
 #-----------------------------------------------------------------------------#
@@ -173,8 +174,10 @@ rm(hex_polys, cell_centers, hex_pts, maxX, maxY, minX, minY, coords,
    x, xcol, ycol, poly_list, sp_poly, cell_id_for_tree)
 
 # Clear the infestations and pick trees randomly to be the new infested
-trees$infested <- 0
-trees$infested[sample(1:nrow(trees), 20)] <- 1
+if (sum(trees$infested) == 0) {
+  trees$infested <- 0
+  trees$infested[sample(1:nrow(trees), 1)] <- 1
+}
 
 # Some new fields we'll want
 trees$year_infested <- NA
@@ -195,6 +198,7 @@ surveys_done[[10]] <- NA
 # timestep. (It will always be counted in timestep 1.)
 update_acers <- T
 
+#setwd("C:/Users/lora/Documents/Projects/APHIS2/NY/Simulation/Run 500 budget")
 
 ###############################################################################
 #-----------------------------------------------------------------------------#
@@ -539,12 +543,34 @@ close(pb)
 
 save(trees, removed_trees, file="Results_surveys.Rdata")
 
+
+#-----------------------------------------------------------------------------#
+# Graphing
+#-----------------------------------------------------------------------------#
 #load("Results_surveys.Rdata")
 #surveys_done <- readRDS("surveys_done.RDS")
 windows()
 for (year in start_year:end_year) {
+  
+  # Collect some statistics
+  total_infested <- length(which(trees$year_infested <= year)) +
+                    length(which(removed_trees$year_infested <= year))
+  newly_infested <- length(which(trees$year_infested == year)) +
+                    length(which(removed_trees$year_infested == year))
+  total_removed <- 0
+  newly_removed <- 0
+  if (!is.null(removed_trees)) {
+    total_removed <- length(which(removed_trees$year_removed <= year))
+    newly_removed <- length(which(removed_trees$year_removed == year))  
+  }
+  
   plot(trees$x.ft, trees$y.ft, pch=20, col="black",
-       main = paste("Year", year))
+       main = paste("Year", year,
+                    "\nTotal infested:", total_infested, 
+                    "Newly infested:", newly_infested,
+                    "\nTotal removed:" , total_removed,
+                    "Newly removed:" , newly_removed),
+       xlab="", ylab="", xaxt="n", yaxt="n")
   x = which(trees$infested == 1 & trees$year_infested <= year)
   if (length(x) > 0) {
     points(trees$x.ft[x], trees$y.ft[x], pch=20, col="red")
@@ -559,7 +585,7 @@ for (year in start_year:end_year) {
     points(trees$x.ft[x], trees$y.ft[x], pch=20, col="gray")
   }
   if (!is.null(surveys_done[[year]]) && !is.na(surveys_done[[year]])) 
-    plot(surveys_done[[year]],add=T, col="blue")
+    plot(surveys_done[[year]],add=T, border="blue")
   savePlot(paste0("run3year", year), type="png")
 }
 
