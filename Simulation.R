@@ -190,7 +190,7 @@ maxdist = 5280
 
 # This list will hold the survey areas each time step
 surveys_done = list()
-surveys_done[[10]] <- NA
+surveys_done[[sim_length]] <- NA
 #-----------------------------------------------------------------------------#
 
 # This is useful for debugging but a terrible idea otherwise. If this is 
@@ -312,7 +312,8 @@ for (year in start_year:end_year) {
     #-----------------------------------------------------------------------#
     # Choose trees to become newly infested based on probability
     #-----------------------------------------------------------------------#
-    new_infested <- which(runif(n = nrow(trees)) < prob)
+    new_infested <- which(runif(n = nrow(trees)) < prob & 
+                          trees$infested == 0)
     trees$year_infested[new_infested] <- year
     trees$infested[new_infested] <- 1
     
@@ -586,7 +587,7 @@ for (year in start_year:end_year) {
   }
   if (!is.null(surveys_done[[year]]) && !is.na(surveys_done[[year]])) 
     plot(surveys_done[[year]],add=T, border="blue")
-  savePlot(paste0("run3year", year), type="png")
+  savePlot(paste0("run1year", year), type="png")
 }
 
 ###############################################################################
