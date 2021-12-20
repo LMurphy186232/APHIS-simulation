@@ -8,12 +8,17 @@
 #
 # Source pressure is rasterized, calculated for 100m hexagonal grid cells across
 # the landscape. A tree will take the source pressure value of the grid cell
-# that it's in.
+# that it's in. 
 #
-# model13 <- function(dsn, delta, delta2, betas, alpha, gamma, 
+# The original model fit a series of beta values, for relative year of 
+# detection. This informed detection probability more than infectiousness.
+# When simulating spread from active sources, we use the single largest beta
+# value.
+#
+# model13 <- function(dsn, delta, betas, alpha, gamma, 
 #                     b1, b2, c1, c2, e1, e2, mu) {
-#  # 2 dispersal kernels 
-#  d1 <- delta1 * exp((dsn/1000)*(distances^delta))
+#  # 1 dispersal kernel 
+#  d1 <- exp((dsn/1000)*(distances^delta))
 #  
 #  disp <- betas[beta_ind] * d1
 #  sp <- rowSums(disp)
@@ -30,7 +35,7 @@
 ny.par <- list(
   dsn   = -2.494357/1000.0,
   delta = 1.056781,
-  betas = c(0.1582599, 0.1005197, 0.005741494, 0.03213881, 0.006482716),
+  beta = 0.1582599,
   gamma = -0.5183086,
   alpha = 6.911606,
   b1    = 98.10091,
@@ -41,11 +46,37 @@ ny.par <- list(
   e2    = 3.97579,
   mu    = 0.7401554)
 
-# Distance to look for neighbor Acers - 30 m, but in feet here
-acer_dist <- 30 * 3.28084
+if (linear_unit == "feet") {
+  
+  # Distance to look for neighbor Acers - 30 m, but in feet here
+  acer_dist <- 30 * 3.28084
+  
+  # Max distance for source trees, in feet
+  maxdist = 5280
+  
+  # Cell size of grid to calculate source pressure. In model 13 this is 100 m
+  cellsize <- 100 * 3.28084 # convert to feet
+  
+} else if (linear_unit == "meters") {
+  
+  # Distance to look for neighbor Acers - 30 m
+  acer_dist <- 30
+  
+  # Max distance for source trees, feet to meters
+  maxdist = 5280 * 0.3048
+  
+  # Cell size of grid to calculate source pressure. In model 13 this is 100 m
+  cellsize <- 100
+  
+} else {
+  stop(paste0("\"", linear_unit, "\" is an invalid choice for linear units.\""))
+}
 
-# Max distance for source trees, in feet
-maxdist = 5280
+
+
+if (!any(names(tree_dat) == "x")) stop("Missing field \"x\" in tree dataset.")
+if (!any(names(tree_dat) == "y")) stop("Missing field \"y\" in tree dataset.")
+if (!any(names(tree_dat) == "mean_noforestdist")) stop("Missing field \"mean_noforestdist\" in tree dataset.")
 
 
 
@@ -55,8 +86,7 @@ maxdist = 5280
 # This will do setup for the model. It sets up the hexagonal grid system.
 #-----------------------------------------------------------------------------#
 do_setup <- function() {
-  # Cell size of grid to calculate source pressure. In model 13 this is 100 m
-  cellsize <- 100 * 3.28084 # convert to feet
+  
   
   tree_dat$uid <- 1:nrow(tree_dat)
   
@@ -64,14 +94,14 @@ do_setup <- function() {
   # We need to create the hexagonal grid that sp is based on.
   # Create a rectangle spatial polygon bounding all points
   #---------------------------------------------------------------------------#
-  xcol = which(names(tree_dat) == "x.ft")
-  ycol = which(names(tree_dat) == "y.ft")
+  xcol = which(names(tree_dat) == "x")
+  ycol = which(names(tree_dat) == "y")
   trees <<- SpatialPointsDataFrame(tree_dat[,c(xcol, ycol)], tree_dat)
   
-  minX <- min(trees$x.ft) - (cellsize*2)
-  maxX <- max(trees$x.ft) + (cellsize*2)
-  minY <- min(trees$y.ft) - (cellsize*2)
-  maxY <- max(trees$y.ft) + (cellsize*2)
+  minX <- min(trees$x) - (cellsize*2)
+  maxX <- max(trees$x) + (cellsize*2)
+  minY <- min(trees$y) - (cellsize*2)
+  maxY <- max(trees$y) + (cellsize*2)
   coords <- rbind(c(minX, minY), 
                   c(minX, maxY), 
                   c(maxX, maxY),
@@ -122,9 +152,12 @@ do_setup <- function() {
      x, xcol, ycol, poly_list, sp_poly, cell_id_for_tree)
   
   # Clear the infestations and pick trees randomly to be the new infested
+  if (length(which(names(trees) == "infested")) == 0) {
+    trees$infested <<- 0 
+  }
   if (sum(trees$infested) == 0) {
     trees$infested <<- 0
-    trees$infested[sample(1:nrow(trees), 1)] <<- 1
+    trees$infested[sample(1:nrow(trees), num_initial_outbreak)] <<- 1
   }
   
   # Some new fields we'll want
@@ -132,8 +165,8 @@ do_setup <- function() {
     trees$year_infested <<- NA
     trees$year_infested[trees$infested == 1] <<- start_year - 1
   }
-  if (length(which(names(trees) == "year_detected")) == 0) {
-    trees$year_detected <<- NA
+  if (length(which(names(trees) == "year_removed")) == 0) {
+    trees$year_removed <<- NA
   }
   if (length(which(names(trees) == "being_surveyed")) == 0) {
     trees$being_surveyed <<- FALSE
@@ -153,8 +186,8 @@ get_tree_risk <- function() {
   #---------------------------------------------------------------------------#
   # Divide up the area into chunks, to process faster. 
   # Add a buffer to be absolutely sure we get all trees.
-  xchunks <- c(seq(from = min(trees$x.ft), to = max(trees$x.ft), by = 500), max(trees$x.ft))
-  ychunks <- c(seq(from = min(trees$y.ft), to = max(trees$y.ft), by = 500), max(trees$y.ft))
+  xchunks <- c(seq(from = min(trees$x), to = max(trees$x), by = 500), max(trees$x))
+  ychunks <- c(seq(from = min(trees$y), to = max(trees$y), by = 500), max(trees$y))
   
   acer_in_30m  <- rep(NA, nrow(trees))
   
@@ -177,16 +210,16 @@ get_tree_risk <- function() {
       ymaxbuff <- ymax + 120
       
       # Get the trees within the core area area
-      chunk_trees <- subset(trees, x.ft >= xmin & 
-                              x.ft <= xmax & 
-                              y.ft >= ymin &
-                              y.ft <= ymax)
+      chunk_trees <- subset(trees, x >= xmin & 
+                              x <= xmax & 
+                              y >= ymin &
+                              y <= ymax)
       
       # Get the potential neighbors within the buffer
-      buffer_trees <- subset(trees, x.ft >= xminbuff & 
-                               x.ft <= xmaxbuff & 
-                               y.ft >= yminbuff &
-                               y.ft <= ymaxbuff)
+      buffer_trees <- subset(trees, x >= xminbuff & 
+                               x <= xmaxbuff & 
+                               y >= yminbuff &
+                               y <= ymaxbuff)
       
       
       if (nrow(chunk_trees) > 0) {
@@ -194,11 +227,12 @@ get_tree_risk <- function() {
         for (k in 1:nrow(chunk_trees)) {
           
           # Get distance to all neighbors
-          dists <- sqrt((chunk_trees$x.ft[k] - buffer_trees$x.ft)^2 + 
-                          (chunk_trees$y.ft[k] - buffer_trees$y.ft)^2)
+          dists <- sqrt((chunk_trees$x[k] - buffer_trees$x)^2 + 
+                        (chunk_trees$y[k] - buffer_trees$y)^2)
           
           # Add up who's in the radius - subtracting 1 for self
-          chunk_trees$acer_in_30m [k] = sum(dists <= acer_dist) - 1
+          chunk_trees$acer_in_30m [k] = sum(dists <= acer_dist &
+                                            is.na(buffer_trees$year_removed)) - 1
         }
         
         # Add back to master dataset
@@ -217,18 +251,16 @@ get_tree_risk <- function() {
   # Get sources: omit those that are still pre-emergence
   sources <- subset(trees, infested == 1 & 
                     (year - year_infested) > lag)
-  bind <- pmin(5, year - sources$year_infested - lag)
   prob <- rep(0, nrow(trees))
   if (nrow(sources) > 0) {
     cells$sp <- 0
     for (i in 1:nrow(cells)) {
-      dv <- sqrt((cells$x[i] - sources$x.ft)^2 + 
-                 (cells$y[i] - sources$y.ft)^2)
+      dv <- sqrt((cells$x[i] - sources$x)^2 + 
+                 (cells$y[i] - sources$y)^2)
       x <- which(dv <= maxdist)
       if (length(x) > 0) {
-        #stop("NN")
         dd1 <- exp((ny.par$dsn)*dv[x]^ny.par$delta)
-        disp <- ny.par$betas[bind[x]] * dd1
+        disp <- ny.par$beta * dd1
         if (any(is.nan(disp))) stop("NOPE")
         cells$sp[i] <- sum(disp, na.rm = T)
       }
