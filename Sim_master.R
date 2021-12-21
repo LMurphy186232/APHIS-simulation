@@ -1,5 +1,6 @@
 ###############################################################################
-# Runs the simulation.
+# Runs the simulation. IF YOU WANT TO RUN THE SIMULATION, THIS FILE ISN'T THE
+# ONE YOU USE: Open "Simulation.R" instead.
 ###############################################################################
 # Do a bit of double-checking...
 if (model != "LI") stop(paste0("\"", model, "\" is an invalid model choice."))
@@ -215,9 +216,16 @@ for (year in start_year:end_year) {
       }
     }
     #-------------------------------------------------------------------------#
-
+    
   }
-
+  
+  #---------------------------------------------------------------------------#
+  # Grow trees
+  #---------------------------------------------------------------------------#
+  trees$dbh <- ifelse(is.na(trees$year_removed), 
+                      trees$dbh + trees$dbh * growth_slope + growth_intercept, 
+                      trees$dbh)
+  
   yearcount <- yearcount + 1
   setWinProgressBar(pb, title = paste0("year ", year, " complete"), value = year)
 }

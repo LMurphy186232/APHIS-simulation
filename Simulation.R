@@ -1,35 +1,7 @@
-###############################################################################
-# ALB spread simulation
-# 
-# This script simulates ALB spread.
-###############################################################################
+## ------------------------------------------------------------------------------------
 
 library(sp)
 library(rgeos)
-
-#-----------------------------------------------------------------------------#
-# Input data: a dataframe of trees that are potential ALB victims. All are 
-# assumed to be Acers. The dataframe should have the following fields, with
-# these exact case-sensitive names (there can be other fields, they'll be 
-# ignored):
-# -- "x", "y": location coordinates. Point of origin doesn't matter, this
-#    will only be used to calculate distances between points. SPECIFY THE 
-#    LINEAR UNITS BELOW (feet, meters).
-# -- "mean_noforestdist": the mean distance to the forest edges in each of the
-#    8 cardinal and intercardinal directions, in m. If the tree isn't in 
-#    a forest landcover, this is 0.
-# -- "dbh": tree's DBH in cm
-# 
-# OPTIONAL:
-# -- "infested": integer, 0 being uninfested, 1 being infested. If this field
-#    is included and there is at least 1 tree with a 1 status, the trees 
-#    marked as 1 will be the seed of the outbreak. If either this field is not
-#    included or all the values are 0, a select number of trees will be
-#    randomly assigned to be the seed of the outbreak (number settable below).
-#    
-# Output: a dataframe, like trees, with additional fields for dates of 
-# infestation and removal.
-#-----------------------------------------------------------------------------#
 
 
 # Location of the source R script files
@@ -73,6 +45,11 @@ lag <- 1
 
 # Model desired: Currently only "LI" supported
 model <- "LI"
+
+# Tree growth slope:
+growth_slope <- 0.01
+# Tree growth intercept:
+growth_intercept <- 0
 
 
 #-----------------------------------------------------------------------------#
@@ -176,4 +153,5 @@ list.files(pattern = "png$", full.names = TRUE) %>%
   image_join() %>% # joins image
   image_animate(fps= 2,loop = 1) %>% # animates, can opt for number of loops
   image_write(paste0(output_root,".gif")) # write to current dir
+
 
