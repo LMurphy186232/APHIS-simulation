@@ -3,10 +3,16 @@
 # ONE YOU USE: Open "Simulation.R" instead.
 ###############################################################################
 # Do a bit of double-checking...
-if (model != "LI") stop(paste0("\"", model, "\" is an invalid model choice."))
+if (!model %in% c("LI", "NYC")) stop(paste0("\"", model, 
+                                     "\" is an invalid model choice."))
 
 setwd(source_directory)
-source("LI_Model.R")
+if (model == "LI") {
+  source("LI_Model.R")
+} 
+if (model == "NYC") {
+  source("NYC_Model.R")
+ }
 
 
 trees <- NULL

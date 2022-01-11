@@ -43,7 +43,7 @@ linear_unit <- "feet"
 # Lag period between oviposition and emergence, in years
 lag <- 1
 
-# Model desired: Currently only "LI" supported
+# Model desired: Currently "LI" and "NYC" supported
 model <- "LI"
 
 # Tree growth slope:

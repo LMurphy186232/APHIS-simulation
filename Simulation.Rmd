@@ -14,6 +14,11 @@ purl("Simulation.rmd")-->
 
 The ALB spread simulation takes a set of trees with an initial ALB infestation, and models insect spread for a desired length of time.
 
+# How to run a simulation
+Open the script called "Simulation.R". Adjust the settings you see there as desired, and run in R. The other scripts do the heavy lifting. They will take their settings from "Simulation.R" and you shouldn't need to adjust them to run the model.
+
+If you make an adjustment to one of the scripts in an area besides the settings, let Lora know so it can be included in future iterations.
+
 # Input
 The input is a dataframe of trees that are potential ALB victims. All are assumed to be Acers. The dataframe should have the following fields, with these exact case-sensitive names (there can be other fields, they'll be ignored):
 
@@ -78,24 +83,27 @@ where this year's DBH is $DBH_{t+1}$, last year's DBH is $DBH_t$, $m$ is the slo
 9. Apply tree growth to all live trees.
 
 
-```{r}
+```{r eval=FALSE}
 
 library(sp)
 library(rgeos)
 
 
-# Location of the source R script files
-source_directory <- "C:/users/lora/documents/Projects/APHIS2/Simulation/APHIS-Simulation"
+# Location of the source R script files "Sim_master.R" and "LI_model.R". These 
+# don't have to be in the same place as the main script, so you can set up 
+# your workspace the way you wish.
+source_directory <- ""
 
 # Where to put output
-output_directory <- "C:/users/lora/documents/Projects/APHIS2/NY/Simulation/Test"
+output_directory <- ""
 # Output name. This will be used as the root for various files that may be
 # produced
 output_root <- "testrun"
 
 #-----------------------------------------------------------------------------#
 # Load input tree file according to desired method; let it be called 
-# "tree_dat"
+# "tree_dat". If it is from a workspace and already named something else,
+# you can rename it here.
 #-----------------------------------------------------------------------------#
 data_directory <- "C:/users/lora/documents/Projects/APHIS2/Simulation"
 setwd(data_directory)
@@ -167,8 +175,9 @@ year_to_begin_management <- 1
 # IN THE INPUT DATASET.
 num_initial_outbreak <- 0
 #-----------------------------------------------------------------------------#
+```
 
-
+```{r echo=FALSE, eval=FALSE}
 #-----------------------------------------------------------------------------#
 # Run the model
 #-----------------------------------------------------------------------------#
