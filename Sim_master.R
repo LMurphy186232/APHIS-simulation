@@ -13,7 +13,7 @@ if (model == "LI") {
 if (model == "NYC") {
   source("NYC_Model.R")
  }
-
+source("Helper_functions.R")
 
 trees <- NULL
 do_setup()
@@ -30,7 +30,7 @@ setwd(output_directory)
 #-----------------------------------------------------------------------------#
 ###############################################################################
 end_year <- (start_year-1) + sim_length
-pb=winProgressBar(min=start_year, max=end_year)
+pb=winProgressBar(min=(start_year-1), max=end_year)
 yearcount <- 1
 for (year in start_year:end_year) {
   
@@ -72,7 +72,8 @@ for (year in start_year:end_year) {
       points <- SpatialPoints(trees[detected_last_year,c(xcol, ycol)])
       if (is.na(points)) stop("BAD")
       if (length(points) == 0) stop("BAD")
-      surveys_done[[yearcount]] <- gBuffer(points, width=7290)
+      #surveys_done[[yearcount]] <- gBuffer(points, width=7290)
+      surveys_done[[yearcount]] <- as_Spatial(st_buffer(st_as_sf(points), dist=7290))
     }
   }
   # Identify which trees are being surveyed this year
@@ -90,7 +91,7 @@ for (year in start_year:end_year) {
   # Management: prepare to track the number of trees removed, in case we
   # have a budget
   #-------------------------------------------------------------------------#
-  if (year_to_begin_management >= year) {
+  if (year_to_begin_management <= year) {
     trees_left_in_budget <- max_trees_removed_per_year
     
     
@@ -239,5 +240,5 @@ close(pb)
 
 
 trees$being_surveyed <- NULL
-saveRDS(trees, file=paste0(output_root, "_trees.Rdata"))
-saveRDS(surveys_done, file=paste0(output_root, "_surveys.Rdata"))
+saveRDS(trees, file=paste0(output_root, "_trees.rds"))
+saveRDS(surveys_done, file=paste0(output_root, "_surveys.rds"))

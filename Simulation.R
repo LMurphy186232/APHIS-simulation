@@ -1,7 +1,8 @@
 ## ------------------------------------------------------------------------------------
 
 library(sp)
-library(rgeos)
+library(sf)
+
 
 
 # Location of the source R script files

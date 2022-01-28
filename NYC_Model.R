@@ -103,67 +103,11 @@ do_setup <- function() {
   
   
   tree_dat$uid <- 1:nrow(tree_dat)
-  
-  #---------------------------------------------------------------------------#
-  # We need to create the hexagonal grid that sp is based on.
-  # Create a rectangle spatial polygon bounding all points
-  #---------------------------------------------------------------------------#
   xcol = which(names(tree_dat) == "x")
   ycol = which(names(tree_dat) == "y")
   trees <<- SpatialPointsDataFrame(tree_dat[,c(xcol, ycol)], tree_dat)
   
-  minX <- min(trees$x) - (cellsize*2)
-  maxX <- max(trees$x) + (cellsize*2)
-  minY <- min(trees$y) - (cellsize*2)
-  maxY <- max(trees$y) + (cellsize*2)
-  coords <- rbind(c(minX, minY), 
-                  c(minX, maxY), 
-                  c(maxX, maxY),
-                  c(maxX, minY),
-                  c(minX, minY))
-  
-  # Make a Polygon
-  p <- Polygon(coords, hole = F)
-  
-  # Make a Polygons - separate class
-  poly_list <- list(Polygons(list(p), ID = 1))
-  
-  # Make our SpatialPolygons object
-  sp_poly <- SpatialPolygons(poly_list)                                                             
-  
-  #-----------------------------------------------------------------------------#
-  # Hex a grid over the top. 
-  #-----------------------------------------------------------------------------#
-  hex_pts <-spsample(sp_poly,type="hexagonal",cellsize=cellsize)
-  hex_polys <- HexPoints2SpatialPolygons(hex_pts)
-  
-  
-  # Get the centroids of the hex polys
-  cell_centers <- gCentroid(hex_polys, byid = T)
-  
-  #-----------------------------------------------------------------------------#
-  # Extract the polygon for each tree
-  #-----------------------------------------------------------------------------#
-  # x will be a vector of indexes of hex_polys that each tree falls into
-  x <- over(trees, hex_polys)
-  cell_id_for_tree <- names(hex_polys)[x]
-  trees$cell <<- cell_id_for_tree
-  
-  #-----------------------------------------------------------------------------#
-  # Filter and package cells data
-  #-----------------------------------------------------------------------------#
-  # Remove hex polys with no trees
-  cell_centers <- cell_centers[unique(x),]
-  hex_polys <- hex_polys[unique(x)]
-  
-  #save(cell_centers, hex_polys, file = "GIS data.Rdata")
-  
-  cells <<- data.frame(ID = names(hex_polys), 
-                      x = cell_centers@coords[,1], 
-                      y = cell_centers@coords[,2])
-  cells <<- cells[cells$ID %in% trees$cell,]
-  rm(hex_polys, cell_centers, hex_pts, maxX, maxY, minX, minY, coords,
-     x, xcol, ycol, poly_list, sp_poly, cell_id_for_tree)
+  createHexGridOnTrees()
   
   # Clear the infestations and pick trees randomly to be the new infested
   if (length(which(names(trees) == "infested")) == 0) {

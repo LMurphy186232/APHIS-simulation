@@ -1,10 +1,21 @@
+<!---Not really useful - this was an attempt to add a documentation page to the GitHub project-->
 # APHIS-simulation
 The ALB spread simulation takes a set of trees with an initial ALB infestation, and models insect spread for a desired length of time.
+
+# Required setup
+The APHIS simulation is performed in R, and takes advantage of R's spatial analysis capabilities. (More on R and spatial data at https://cran.r-project.org/view=Spatial.)
+
+To get set up:
+1. Install the latest version of R. (https://cran.r-project.org/)
+2. If you are working on a computer running Windows, install RTools, which can be found under the R Binaries section of the website above. Follow the directions to make sure R and RTools can find each other.
+3. Install the additional packages "sp" and "sf". Be sure to use dependencies=TRUE when you do!
+4. Additionally, the packages "dplyr", "raster" and "magick" may be required for certain types of output.
+
 
 # Input
 The input is a dataframe of trees that are potential ALB victims. All are assumed to be Acers. The dataframe should have the following fields, with these exact case-sensitive names (there can be other fields, they'll be ignored):
 
-- "x", "y": location coordinates. Point of origin doesn't matter, this will only be used to calculate distances between points. SPECIFY THE LINEAR UNITS BELOW (feet, meters).
+- "x", "y": location coordinates. Point of origin doesn't matter, this will only be used to calculate distances between points. SPECIFY THE LINEAR UNITS BELOW (feet or meters are the only choices; data in a projection where the linear units are degrees must be projected).
 - "mean_noforestdist": the mean distance to the forest edges in each of the 8 cardinal and intercardinal directions, in m. If the tree isn't in a forest landcover, this is 0.
 - "dbh": tree's DBH in cm
  
@@ -14,7 +25,11 @@ OPTIONAL:
 The "mean_noforestdist" field can be calculated with the script "Get non forest landcover in 8 directions.R."
 
 # Output
-A dataframe that is a copy of the input dataframe, with additional fields for dates of infestation and removal ("year_infested" and "year_removed").
+A SpatialPointsDataFrame that is a copy of the input dataframe, with additional fields for dates of infestation and removal ("year_infested" and "year_removed").
+
+A SpatialPointsDataFrame is a dataframe with spatial information for each line, equivalent to a points shapefile in ArcGIS. In most cases, dataframe syntax can be used on it directly; for instance, the $ operator will work as expected. It can be coerced into a regular dataframe using as.data.frame. 
+
+The SpatialPointsDataFrame can be easily be plotted as a set of points on a map using plot(), or used in other spatial analyses. It can also be written out as a shapefile compatible with a variety of GIS software using the "rgdal" package in R.
 
 # Risk model: determining which trees are infested
 Uninfested trees have a certain probability of being infested each timestep, as a function of number of and distance to post-emergence infested source trees and various tree characteristics (see below).
