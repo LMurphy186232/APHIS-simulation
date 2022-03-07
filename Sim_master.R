@@ -3,15 +3,15 @@
 # ONE YOU USE: Open "Simulation.R" instead.
 ###############################################################################
 # Do a bit of double-checking...
-if (!model %in% c("LI", "NYC")) stop(paste0("\"", model, 
+if (!model %in% c(11, 13)) stop(paste0("\"", model, 
                                      "\" is an invalid model choice."))
 
 setwd(source_directory)
-if (model == "LI") {
-  source("LI_Model.R")
+if (model == 13) {
+  source("Model13.R")
 } 
-if (model == "NYC") {
-  source("NYC_Model.R")
+if (model == 11) {
+  source("Model11.R")
  }
 source("Helper_functions.R")
 
@@ -78,7 +78,7 @@ for (year in start_year:end_year) {
   }
   # Identify which trees are being surveyed this year
   if (!is.null(surveys_done[[yearcount]]) && 
-      !is.na(surveys_done[[yearcount]])) {
+      mode(surveys_done[[yearcount]]) == "S4") {
     x <- over(trees, surveys_done[[yearcount]])
     trees$being_surveyed <- !is.na(x)
   }

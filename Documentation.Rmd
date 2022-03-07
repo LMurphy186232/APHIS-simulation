@@ -24,7 +24,7 @@ To get set up:
 install.packages(c("sp", "sf"), dependencies=TRUE)
 ```
 
-4. Additionally, the packages "dplyr", "raster" and "magick" may be required for certain types of output.
+4. Additionally, the package "magick" is required if you want to animate the output graphs.
 
 
 # How to run a simulation
@@ -99,14 +99,13 @@ Uninfested trees have a certain probability of being infested each timestep, as 
 
 Source trees are trees which are infested, post-emergence, and have not been removed. A tree which is infested is pre-emergence until the lag period has passed (see biology settings of the model). Pre-emergence trees do not infest other trees. The lag period could be set to 0 to remove the pre- and post-emergence distinction.
 
-There are multiple possible risk models. This simulator is the result of analyses conducted in several different geographic regions in the U.S. These regions had different risk models that best captured their local conditions and landscapes. The risk models are named after the area in which they were developed.
+There are multiple possible risk models. This simulator is the result of analyses conducted in several different geographic regions in the U.S. These regions had different risk models that best captured their local conditions and landscapes. 
 
 ## Risk model parameters
 Each risk model requires several parameter values to control its behavior. The risk models were parameterized with local data in each geographic region. The best-fit parameter values are included as defaults with each model.
 
-## LI risk model
-The Long Island ("LI") model assesses tree risk as a function of source pressure, DBH of tree, number of nearby Acer neighbors, and landcover. 
-
+## Risk model 13
+This model assesses tree risk as a function of source pressure, DBH of tree, number of nearby Acer neighbors, and landcover. This model best described conditions in Long Island, NY.
 
 The probability that a tree will be infested is:
 $$prob = \mu * source.term * dbh.term * density.term * distance.term$$
@@ -133,8 +132,8 @@ where $dist_lc$ is the mean distance to no-forest landcover and $e_1$ and $e_2$ 
 
 
 
-## NYC risk model
-The New York City ("LI") model assesses tree risk as a function of source pressure, DBH of tree, number of nearby Acer neighbors, and landcover. 
+## Risk model 11
+This model assesses tree risk as a function of source pressure, DBH of tree, number of nearby Acer neighbors, and landcover. This was the best model in New York City and Worcester, MA.
 
 
 The probability that a tree will be infested is:

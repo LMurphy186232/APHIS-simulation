@@ -52,7 +52,7 @@ makeMaps <- function(start_year, end_year, filename) {
     if (length(x) > 0) {
       points(trees$x[x], trees$y[x], pch=20, col="gray")
     }
-    if (!is.null(surveys_done[[year]]) && !is.na(surveys_done[[year]])) 
+    if (!is.null(surveys_done[[year]]) && mode(surveys_done[[year]]) ==  "S4") 
       plot(surveys_done[[year]],add=T, border="blue")
     
     savePlot(paste0(filename, formatC(year, width=2, flag=0)), type="png")
@@ -68,15 +68,66 @@ makeMaps <- function(start_year, end_year, filename) {
 # filename: what you want your output GIF to be named
 #-----------------------------------------------------------------------------#
 makeGif <- function(path, filename) {
-  library(dplyr)
-  library(raster)
   library(magick)
-  library(tidyverse)
   
-  list.files(path, pattern = "png$", full.names = TRUE) %>% 
-  map(image_read) %>% # reads each path file
-  image_join() %>% # joins image
-  image_animate(fps= 2,loop = 1) %>% # animates, can opt for number of loops
-  image_write(paste0(filename,".gif")) # write to current dir
+  ff <- list.files(path, pattern = "png$", full.names = TRUE)
+  ir <- image_read(ff)
+  ij <- image_join(ir)
+  im <- image_animate(ij, fps= 2,loop = 1)
+  image_write(im, paste0(filename,".gif"))
 }
 
+
+#-----------------------------------------------------------------------------#
+# Make line graphs for output.
+#
+# Arguments:
+# path: path to PNG map files
+# filename: what you want your output GIF to be named
+#-----------------------------------------------------------------------------#
+makeLineGraphs <- function(start_year, end_year, filename) {
+  library(ggplot2)
+  library(ggpubr)
+  
+  total_infested <- rep(0, length(start_year:end_year))
+  newly_infested <- rep(0, length(start_year:end_year))
+  total_removed  <- rep(0, length(start_year:end_year))
+  newly_removed  <- rep(0, length(start_year:end_year))
+  
+  # Collect the statistics year-by-year
+  for (year in start_year:end_year) {
+    total_infested[year] <- length(which(trees$year_infested <= year))
+    newly_infested[year] <- length(which(trees$year_infested == year))
+    total_removed [year] <- length(which(trees$year_removed <= year))
+    newly_removed [year] <- length(which(trees$year_removed == year))  
+  }
+  
+  # Graph this nicely
+  df <- data.frame(Year = start_year:end_year,
+                   total_infested = total_infested,
+                   newly_infested = newly_infested,
+                   total_removed  = total_removed,
+                   newly_removed  = newly_removed)
+  
+  p1 <- ggplot(data = df, aes(x = Year, y = total_infested)) +
+    geom_line(lwd=2) +
+    labs(y = "Cumulative total infested") +
+    theme_bw()
+  
+  p2 <- ggplot(data = df, aes(x = Year, y = newly_infested)) +
+    geom_line(lwd=2) +
+    labs(y = "Newly infested") +
+    theme_bw()
+  
+  p3 <- ggplot(data = df, aes(x = Year, y = total_removed)) +
+    geom_line(lwd=2) +
+    labs(y = "Cumulative total removed") +
+    theme_bw()
+  
+  p4 <- ggplot(data = df, aes(x = Year, y = newly_removed)) +
+    geom_line(lwd=2) +
+    labs(y = "Newly removed") +
+    theme_bw()
+  
+  ggpubr::ggarrange(p1, p2, p3, p4, nrow=2, ncol=2)
+}
