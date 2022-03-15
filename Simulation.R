@@ -17,8 +17,8 @@ output_directory <- ""
 output_root <- "testrun"
 
 #-----------------------------------------------------------------------------#
-# Load input tree file according to desired method; let it be called 
-# "tree_dat"
+# Load input tree file according to desired method; call it "tree_dat". Make
+# it has no NAs in DBH, x, and y. These should all be Acers.
 #-----------------------------------------------------------------------------#
 tree_dat <- readRDS("LI_trees.rds")
 #-----------------------------------------------------------------------------#
@@ -27,8 +27,8 @@ tree_dat <- readRDS("LI_trees.rds")
 #-----------------------------------------------------------------------------#
 # Run settings:
 #-----------------------------------------------------------------------------#
-# Year to start simulation at - this will count from here. It doesn't matter
-# what it is as long as it's an integer.
+# Year to start simulation at. It doesn't matter what it is as long as it's an 
+# integer. This can be a counter or an actual year if you prefer.
 start_year <- 1
 
 # How long, in years, to run simulation
@@ -47,8 +47,11 @@ lag <- 1
 # Model desired: Currently 11 and 13 supported
 model <- 13
 
+# Settings for linear growth model for trees. 
+# DBH(t+1) = DBH(t) + (slope * DBH(t) + intercept)
 # Tree growth slope:
 growth_slope <- 0.01
+
 # Tree growth intercept:
 growth_intercept <- 0
 
@@ -57,25 +60,23 @@ growth_intercept <- 0
 # Management settings:
 #-----------------------------------------------------------------------------#
 # Probability that a post-emergence tree in a unit being surveyed is detected
-# and removed
+# and removed, 0 to 1
 prob_surv_post_detect <- 0.9
 
 # Probability that a pre-emergence tree in a unit being surveyed is detected
-# and removed
+# and removed, 0 to 1
 prob_surv_prem_detect <- 0.7
 
 # Probability that a post-emergence tree in a unit NOT being surveyed is
-# detected. This is also what will be used to find the initial tree in an
-# infestation
+# detected, 0 to 1. 
 prob_nosurv_post_detect <- 0.05
 
-# Probability that a pre-emergence tree NOT in a survey unit will be detected.
-# This is also what will be used to find the initial tree in an infestation.
+# Probability that a pre-emergence tree in a unit NOT being surveyed will be 
+# detected.
 prob_nosurv_prem_detect <- 0
 
 # Budget. The max number of trees that the budget will allow to be removed 
-# per year. This is the simplistic beginning, assuming all trees cost the same.
-# This could be elaborated into a cost function and total budget if warranted.
+# per year. 
 max_trees_removed_per_year <- 100000000
 
 # Year to begin any management. Allows for a spin-up period. Management is not
@@ -180,7 +181,11 @@ num_initial_outbreak <- 0
 setwd(source_directory)
 source("Sim_master.R")
 
+#-----------------------------------------------------------------------------#
+# Output graphics. Some basic functions are included with the script below.
+#-----------------------------------------------------------------------------#
 setwd(source_directory)
 source("Sim_graphics.R")
-makeMaps(start_year, end_year, paste0(output_directory, "/", output_root))
+makeMaps(start_year, end_year, paste0(output_directory, "/", output_root, "map"))
+makeLineGraphs(start_year, end_year, paste0(output_directory, "/", output_root, "lines"))
 

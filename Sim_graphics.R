@@ -20,7 +20,7 @@
 # format filename[year].png
 #-----------------------------------------------------------------------------#
 makeMaps <- function(start_year, end_year, filename) {
-  windows()
+  #windows()
   for (year in start_year:end_year) {
     
     # Collect some statistics
@@ -31,7 +31,8 @@ makeMaps <- function(start_year, end_year, filename) {
     total_removed <- length(which(trees$year_removed <= year))
     newly_removed <- length(which(trees$year_removed == year))  
     
-    
+    if (endsWith(filename, "png")) filename <- substr(filename, 0, nchar(filename) - 4)
+    png(paste0(filename, formatC(year, width=2, flag=0), ".png"))
     plot(trees$x, trees$y, pch=20, col="black",
          main = paste("Year", year,
                       "\nTotal infested:", total_infested, 
@@ -54,8 +55,8 @@ makeMaps <- function(start_year, end_year, filename) {
     }
     if (!is.null(surveys_done[[year]]) && mode(surveys_done[[year]]) ==  "S4") 
       plot(surveys_done[[year]],add=T, border="blue")
-    
-    savePlot(paste0(filename, formatC(year, width=2, flag=0)), type="png")
+    dev.off()
+    #savePlot(paste0(filename, formatC(year, width=2, flag=0)), type="png")
   }
 }
 
@@ -129,5 +130,7 @@ makeLineGraphs <- function(start_year, end_year, filename) {
     labs(y = "Newly removed") +
     theme_bw()
   
-  ggpubr::ggarrange(p1, p2, p3, p4, nrow=2, ncol=2)
+  if (!endsWith(filename, "png")) filename <- paste0(filename, ".png")
+  ggarrange(p1, p2, p3, p4, nrow=2, ncol=2) %>%
+    ggexport(filename = filename)
 }

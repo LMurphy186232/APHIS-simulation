@@ -127,21 +127,30 @@ get_tree_risk <- function() {
 
   # If this is the first year - have to count them all
   if (year == start_year) {
-    trees$acer_in_30m  <- rep(NA, nrow(trees))
+    #print("Doin it the first time")
+    trees$acer_in_30m  <<- rep(NA, nrow(trees))
     live <- which(is.na(trees$year_removed))
-    trees$acer_in_30m[live] <- count_acer_neighbors(trees$x[live], trees$y[live], acer_dist)
+    trees$acer_in_30m[live] <<- count_acer_neighbors(trees$x[live], trees$y[live], acer_dist)
+    #acer_bak <<- trees$acer_in_30m
   } else {
+    #print("Checkin it the first time")
+    #if (sum(abs(acer_bak - trees$acer_in_30m)) > 0) stop("Trees changed")
     # If nobody died last year, there's no updating to do
     if (any(trees$year_removed == (year-1), na.rm=T)) {
+      #print("Updatin it")
       dead <- which(trees$year_removed == (year-1))
       live <- which(is.na(trees$year_removed))
       vv <- update_acer_neighbors(trees$x[live], trees$y[live],
                                   trees$x[dead], trees$y[dead],
                                   acer_dist)
-      trees$acer_in_30m[live] <- trees$acer_in_30m[live] - vv
+      trees$acer_in_30m[live] <<- trees$acer_in_30m[live] - vv
           
     }
   }
+  # FOR TESTING
+  live <- which(is.na(trees$year_removed))
+  acer_in_30m2 <- count_acer_neighbors(trees$x[live], trees$y[live], acer_dist)
+  if (sum(abs(acer_in_30m2 - trees$acer_in_30m[live])) != 0) stop("Count problem")
   
   #---------------------------------------------------------------------------#
   

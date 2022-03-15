@@ -18,19 +18,21 @@ To get set up:
 
 2. If you are working on a computer running Windows, install RTools, which can be found under the R Binaries section of the website above. Follow the directions to make sure R and RTools can find each other.
 
-3. Install the additional packages "sp" and "sf". Be sure to use dependencies=TRUE when you do:
+3. Install the additional packages "Rcpp", "sp" and "sf". Be sure to use dependencies=TRUE when you do:
 
 ```{r eval=FALSE}
-install.packages(c("sp", "sf"), dependencies=TRUE)
+install.packages(c("sp", "sf", "Rcpp"), dependencies=TRUE)
 ```
 
-4. Additionally, the package "magick" is required if you want to animate the output graphs.
+4. Additionally, the packages "magick", "ggplot2", and "ggpubr" may be required if you want to use functions in the provided graphics script (not required to perform simulations).
 
 
 # How to run a simulation
-Open the script called "Simulation.R". Adjust the settings you see there as desired, and run in R. The other scripts do the heavy lifting. They will take their settings from "Simulation.R" and you shouldn't need to adjust them to run the model.
+Open the script called "Simulation.R". Adjust the settings you see there as desired, and run in R. 
 
-If you make an adjustment to one of the scripts in an area besides the settings, let Lora know so it can be included in future iterations.
+Best practice is to save a copy of this script for each run you do. This provides a record of your settings.
+
+The other scripts do the heavy lifting. They will take their settings from "Simulation.R" and you shouldn't need to adjust them to run the model. 
 
 
 # Input
