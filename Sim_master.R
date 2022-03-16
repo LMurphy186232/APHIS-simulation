@@ -70,17 +70,19 @@ for (year in start_year:end_year) {
       xcol = which(names(trees) == "x")
       ycol = which(names(trees) == "y")
       points <- SpatialPoints(trees[detected_last_year,c(xcol, ycol)])
-      #if (is.na(points)) stop("BAD")
-      if (mode(points) != "S4")
       if (length(points) == 0) stop("BAD")
       #surveys_done[[yearcount]] <- gBuffer(points, width=7290)
-      surveys_done[[yearcount]] <- as_Spatial(st_buffer(st_as_sf(points), dist=7290))
+      ss <- st_buffer(st_as_sf(points), dist=7290)
+      surveys_done[[yearcount]] <- as(st_geometry(ss), "Spatial")
+    
     }
   }
   # Identify which trees are being surveyed this year
   if (!is.null(surveys_done[[yearcount]]) && 
       mode(surveys_done[[yearcount]]) == "S4") {
     x <- over(trees, surveys_done[[yearcount]])
+    
+    #x <- over(surveys_done[[yearcount]], trees)
     trees$being_surveyed <- !is.na(x)
   }
   #saveRDS(surveys_done, "surveys_done.RDS")

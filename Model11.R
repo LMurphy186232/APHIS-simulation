@@ -127,9 +127,9 @@ get_tree_risk <- function() {
 
   # If this is the first year - have to count them all
   if (year == start_year) {
-    trees$acer_in_30m  <- rep(NA, nrow(trees))
+    trees$acer_in_30m  <<- rep(NA, nrow(trees))
     live <- which(is.na(trees$year_removed))
-    trees$acer_in_30m[live] <- count_acer_neighbors(trees$x[live], trees$y[live], acer_dist)
+    trees$acer_in_30m[live] <<- count_acer_neighbors(trees$x[live], trees$y[live], acer_dist)
   } else {
     # If nobody died last year, there's no updating to do
     if (any(trees$year_removed == (year-1), na.rm=T)) {
@@ -138,7 +138,7 @@ get_tree_risk <- function() {
       vv <- update_acer_neighbors(trees$x[live], trees$y[live],
                                   trees$x[dead], trees$y[dead],
                                   acer_dist)
-      trees$acer_in_30m[live] <- trees$acer_in_30m[live] - vv
+      trees$acer_in_30m[live] <<- trees$acer_in_30m[live] - vv
           
     }
   }
@@ -158,18 +158,14 @@ get_tree_risk <- function() {
   if (nrow(sources) > 0) {
     cells$sp <- 0
     for (i in 1:nrow(cells)) {
-      
-      # Calculate distance to sources
-      dv <- sqrt((cells$x[i] - sources$x)^2 + 
-                 (cells$y[i] - sources$y)^2)
-      
-      # Select which sources are within the effective range
+      dv <- sqrt((cells$X[i] - sources$x)^2 + 
+                 (cells$Y[i] - sources$y)^2)
       x <- which(dv <= maxdist)
       if (length(x) > 0) {
         
         # Determine direction to the sources
-        X <- sources$x[x] - cells$x[i]
-        Y <- sources$y[x] - cells$y[i]
+        X <- sources$x[x] - cells$X[i]
+        Y <- sources$y[x] - cells$Y[i]
         azi <- rep(NA, length(x))
         
         #Calculate the azimuth - correct for quadrant of "to" relative to "from"
