@@ -6,6 +6,9 @@
 if (!model %in% c(11, 13)) stop(paste0("\"", model, 
                                      "\" is an invalid model choice."))
 
+# Set random seed if desired
+if (!is.null(random_seed)) set.seed(random_seed)
+
 setwd(source_directory)
 if (model == 13) {
   source("Model13.R")
@@ -71,8 +74,7 @@ for (year in start_year:end_year) {
       ycol = which(names(trees) == "y")
       points <- SpatialPoints(trees[detected_last_year,c(xcol, ycol)])
       if (length(points) == 0) stop("BAD")
-      #surveys_done[[yearcount]] <- gBuffer(points, width=7290)
-      ss <- st_buffer(st_as_sf(points), dist=7290)
+      ss <- st_buffer(st_as_sf(points), dist=survey_radius)
       surveys_done[[yearcount]] <- as(st_geometry(ss), "Spatial")
     
     }

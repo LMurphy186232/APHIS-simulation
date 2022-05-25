@@ -88,6 +88,15 @@ year_to_begin_management <- 1
 # in the first year. THIS IS IGNORED IF THERE ARE ANY TREES ALREADY INFESTED
 # IN THE INPUT DATASET.
 num_initial_outbreak <- 0
+
+# Survey radius. This is the radius of a circular survey region, in feet. The
+# default, 7290 ft, is the 1.5 mile APHIS standard.
+survey_radius <- 7290
+
+# Random seed. If this is not NULL, then the random number generator will be
+# set to this value (should be a small integer) and multiple iterations of the
+# same run will come out the same.
+random_seed <- NULL
 #-----------------------------------------------------------------------------#
 
 
