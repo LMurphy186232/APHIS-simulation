@@ -64,16 +64,23 @@ other fields, they'll be ignored):
     of the 8 cardinal and intercardinal directions, in m. If the tree
     isn't in a forest landcover, this is 0.
 -   "dbh": tree's DBH in cm
-
-OPTIONAL: - "infested": integer, 0 being uninfested, 1 being infested.
-If this field is included and there is at least 1 tree with a 1 status,
-the trees marked as 1 will be the seed of the outbreak. If either this
-field is not included or all the values are 0, a select number of trees
-will be randomly assigned to be the seed of the outbreak (number
-settable below).
+-   OPTIONAL: "infested": integer, 0 being uninfested, 1 being infested.
+    If this field is included and there is at least 1 tree with a 1
+    status, the trees marked as 1 will be the seed of the outbreak. If
+    either this field is not included or all the values are 0, a select
+    number of trees will be randomly assigned to be the seed of the
+    outbreak (number settable below).
+-   OPTIONAL: "unit": identifier of any format, that can be used to
+    prescribe surveys.
 
 The "mean_noforestdist" field can be calculated with the script "Get non
 forest landcover in 8 directions.R."
+
+OPTIONAL INPUT: A dataframe that specifies what surveys to do, and when
+to do them. Two required fields: "year", with the year to do the survey
+(matching a year in the range you specify for starting and ending
+years), and "unit", an identifier that matches the "unit" field in the
+trees dataframe.
 
 # Output
 
@@ -117,6 +124,31 @@ plot(trees)
 plot(surveys[[3]], add=T)
 ```
 
+# Management
+
+Infested trees are (mostly) detected during surveys. Surveys can be
+managed in one of two ways: the simulation can automatically decide what
+is surveyed based on detections, or you can explicitly specify areas to
+be surveyed and when.
+
+If the simulation is automatically determining surveys, a survey will
+occur in a circle centered on each infested tree detected in the
+previous year, of a radius to be set by the user. Circles may overlap.
+
+If you want to specify when and where surveys will be done, set up a
+dataframe with two fields: "year" and "unit". The trees dataframe should
+also have a field called "unit". For example:
+
+| year | unit  |
+|------|-------|
+| 1    | ZN_1  |
+| 2    | ZN_5  |
+| 2    | ZN_6  |
+| 4    | ZN_10 |
+
+In year 2, all trees whose unit equals "ZN_5" or "ZN_6" will be
+surveyed. No survey will occur in year 3.
+
 # Model flow
 
 1.  Choose the risk model and do any necessary setup.
@@ -139,16 +171,15 @@ plot(surveys[[3]], add=T)
         post-emergence tree NOT in surveyed area, pre-emergence tree NOT
         in surveyed area.
 
-    e.  Decide what's being surveyed: identify trees that were detected
-        in the previous year. Define a circle of radius 1.5 miles around
-        each detected tree: all areas so marked are surveyed areas.
-        (This is limited to 500 trees, for computer memory reasons.) If
-        no trees were detected in the previous year, no surveys will be
-        done.
+    e.  Decide what's being surveyed: either decide automatically based
+        on trees that were detected in the previous year, or check the
+        list of surveys to be done and choose all trees in units to be
+        surveyed in the current year. It is possible, with either
+        method, that there will be no surveys in a given year.
 
-    f.  Identify all post-emergence trees within surveyed areas, and use
-        a random number against the probability of detection of these
-        trees to choose which are detected and removed.
+    f.  Identify all post-emergence trees within surveyed areas, if any,
+        and use a random number against the probability of detection of
+        these trees to choose which are detected and removed.
 
     g.  If the removal budget has not been met, identify all
         pre-emergence infested trees within surveyed areas. Use a random

@@ -73,7 +73,7 @@ par <- list(
   delta1 =	0.0003467984,    #d1 in source pressure (sp)
   delta2 = 0.04536906,       #d2 in source pressure (sp)
   dof    = 15837.44,         #d2 in source pressure (sp)
-  dbf    = 0.05532833        #d2 in source pressure (sp)
+  dbf    = 0.05532833,        #d2 in source pressure (sp)
   beta   = 0.6132349,        #source pressure (sp)
   dirs = c(1,                #sources at 0-30 degrees
            0.2359833,        #sources at 30-60 degrees 
