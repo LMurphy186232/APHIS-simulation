@@ -19,6 +19,11 @@ output_root <- "testrun"
 #-----------------------------------------------------------------------------#
 # Load input tree file according to desired method; call it "tree_dat". Make
 # it has no NAs in DBH, x, and y. These should all be trees of the genus Acer.
+#
+# Additionally, if you plan to prescribe surveys at specific times, this should
+# have a field called "unit" that identifies which trees belong to the units
+# being surveyed. NAs are OK. This field is not required if surveys are not
+# prescribed.
 #-----------------------------------------------------------------------------#
 tree_dat <- readRDS("LI_trees.rds")
 #-----------------------------------------------------------------------------#
@@ -58,6 +63,14 @@ growth_intercept <- 0
 
 #-----------------------------------------------------------------------------#
 # Management settings:
+# There are two ways to do surveying that are mutually exclusive. One is to
+# allow for the random detection of infested trees, and let the simulation
+# choose when and what to survey. If this happens, for every detected infested
+# tree, there will be a survey the next year of the area around that tree, in
+# a circle of the specified radius centered on the infested tree.
+#
+# The second method is to specify a list of years and surveyed units for that
+# year. If there is a list like this, any other surveying settings are ignored.
 #-----------------------------------------------------------------------------#
 # Probability that a post-emergence tree in a unit being surveyed is detected
 # and removed, 0 to 1
@@ -79,9 +92,11 @@ prob_nosurv_prem_detect <- 0
 # per year. 
 max_trees_removed_per_year <- 100000000
 
+
+
 # Year to begin any management. Allows for a spin-up period. Management is not
 # guaranteed to start this year - depending on probabilities, the 
-# infestation may yet go unnoticed for a while longer.
+# infestation may yet go unnoticed for a while longer. Ignored if the
 year_to_begin_management <- 1
 
 # Number of trees to randomly select for infestation to start the outbreak
@@ -92,6 +107,16 @@ num_initial_outbreak <- 0
 # Survey radius. This is the radius of a circular survey region, in feet. The
 # default, 7290 ft, is the 1.5 mile APHIS standard.
 survey_radius <- 7290
+
+# Survey unit lists - if this is used, all other survey settings are ignored
+# and the simulation will do no other surveying. This presumes that there is
+# a field in the trees data frame called "unit". You can also replace this line
+# with the reading of a text file with this data. Make it have fields called 
+# "year" and "unit".
+prescribed_survey <- data.frame(
+  year = c(1, 1, 1, 2, 4),
+  unit = c("LIB_107", "LIB_23", "LIB_417", "LIB_78", "LIB_421"))
+#prescribed_survey <- NULL # to not have prescribed surveys
 
 # Random seed. If this is not NULL, then the random number generator will be
 # set to this value (should be a small integer) and multiple iterations of the
