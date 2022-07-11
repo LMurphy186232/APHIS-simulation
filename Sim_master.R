@@ -3,7 +3,7 @@
 # ONE YOU USE: Open "Simulation.R" instead.
 ###############################################################################
 # Do a bit of double-checking...
-if (!model %in% c(11, 13)) stop(paste0("\"", model, 
+if (!model %in% c(11, 13, 15)) stop(paste0("\"", model, 
                                      "\" is an invalid model choice."))
 
 # Set random seed if desired
@@ -15,7 +15,10 @@ if (model == 13) {
 } 
 if (model == 11) {
   source("Model11.R")
- }
+}
+if (model == 15) {
+  source("Model15.R")
+}
 source("Helper_functions.R")
 
 trees <- NULL

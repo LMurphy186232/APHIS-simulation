@@ -60,10 +60,11 @@ other fields, they'll be ignored):
 -   "x", "y": location coordinates. Point of origin doesn't matter, this
     will only be used to calculate distances between points. SPECIFY THE
     LINEAR UNITS BELOW (feet, meters).
--   "mean_noforestdist": the mean distance to the forest edges in each
-    of the 8 cardinal and intercardinal directions, in m. If the tree
-    isn't in a forest landcover, this is 0.
 -   "dbh": tree's DBH in cm
+-   OPTIONAL: "mean_noforestdist": the mean distance to the forest edges
+    in each of the 8 cardinal and intercardinal directions, in m. If the
+    tree isn't in a forest landcover, this is 0. This is required by
+    some risk models but not all.
 -   OPTIONAL: "infested": integer, 0 being uninfested, 1 being infested.
     If this field is included and there is at least 1 tree with a 1
     status, the trees marked as 1 will be the seed of the outbreak. If
@@ -289,6 +290,33 @@ $c_2$ are parameters.
 $$distance.term = \cfrac{1}{1 + \left(\cfrac{dist_{lc}}{ e_1 }\right)^{e_2}}$$
 where $dist_lc$ is the mean distance to no-forest landcover and $e_1$
 and $e_2$ are parameters.
+
+## Risk model 15
+
+This model assesses tree risk as a function of source pressure, DBH of
+tree, and number of nearby *Acer* neighbors. This model best described
+conditions in South Carolina.
+
+The probability that a tree will be infested is:
+$$prob = \mu * source.term * dbh.term * density.term$$ where $\mu$ is a
+parameter representing the upper limit of infestation probability.
+
+$$source.term = \cfrac{1}{1 + \left(\cfrac{sp}{ \alpha }\right)^\gamma} $$
+where sp is a measure of source pressure and $\alpha$ and $\gamma$ are
+parameters.
+
+$$sp = \sum_{i=1}^N \beta * e^{(dsn*(distance_i ^ \delta))}$$ for N
+source trees within the maximum distance of 5280 feet, where $dsn$,
+$\beta$, and $\delta$ are parameters and $distance_i$ is the distance
+from the source tree to the ith neighor.
+
+$$dbh.term = \cfrac{1}{1 + \left(\cfrac{DBH}{ b_1 }\right)^{b_2}} $$
+where DBH is tree's DBH, in cm, and $b_1$ and $b_2$ are parameters.
+
+$$density.term = \cfrac{1}{1 + \left(\cfrac{N_{acer}}{ c_1 }\right)^{c_2}} $$
+where $N_{acer}$ is the number of *Acer* neighbors within 30 m of the
+target (will be calculated and updated by the script) and $c_1$ and
+$c_2$ are parameters.
 
 # Tree growth
 

@@ -49,7 +49,7 @@ linear_unit <- "feet"
 # Lag period between oviposition and emergence, in years
 lag <- 1
 
-# Model desired: Currently 11 and 13 supported
+# Model desired: Currently 11, 13, and 15 supported
 model <- 13
 
 # Settings for linear growth model for trees. 
