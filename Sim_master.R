@@ -85,6 +85,7 @@ for (year in start_year:end_year) {
         xcol = which(names(trees) == "x")
         ycol = which(names(trees) == "y")
         points <- SpatialPoints(trees[detected_last_year,c(xcol, ycol)])
+        proj4string(points) <- proj4string(trees)
         if (length(points) == 0) stop("BAD")
         ss <- st_buffer(st_as_sf(points), dist=survey_radius)
         surveys_done[[yearcount]] <- as(st_geometry(ss), "Spatial")

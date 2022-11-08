@@ -70,9 +70,13 @@ do_setup <- function() {
   
   
   tree_dat$uid <- 1:nrow(tree_dat)
-  xcol = which(names(tree_dat) == "x")
-  ycol = which(names(tree_dat) == "y")
-  trees <<- SpatialPointsDataFrame(tree_dat[,c(xcol, ycol)], tree_dat)
+  if (class(tree_dat) != "SpatialPointsDataFrame") {
+    xcol = which(names(tree_dat) == "x")
+    ycol = which(names(tree_dat) == "y")
+    trees <<- SpatialPointsDataFrame(tree_dat[,c(xcol, ycol)], tree_dat)
+  } else {
+    trees <<- tree_dat
+  }
   
   #createHexGridOnTrees()
   
