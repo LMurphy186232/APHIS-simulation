@@ -150,6 +150,14 @@ also have a field called "unit". For example:
 In year 2, all trees whose unit equals "ZN_5" or "ZN_6" will be
 surveyed. No survey will occur in year 3.
 
+You can choose a proactive host removal strategy by setting the value of
+host_removal_radius. This will cause all host trees within the specified
+radius around each detected infested tree to be removed, subject to the
+maximum tree budget. Setting this value to 0 means that no proactive
+removal of uninfested trees will be done. In the output, proactively
+removed trees can be identified by having a removal year, but an
+infestation status of 0.
+
 # Model flow
 
 1.  Choose the risk model and do any necessary setup.
@@ -191,7 +199,11 @@ surveyed. No survey will occur in year 3.
         pre-emergence trees. All detected trees will be removed, up to
         the budget.
 
-    i.  Apply tree growth to all live trees.
+    i.  Perform proactive host removal, if desired. Identify all host
+        trees within the specified radius of all infested trees detected
+        in the current year, and remove them (up to the budget).
+
+    j.  Apply tree growth to all live trees.
 
 3.  Clean up; create graphics; save output files.
 

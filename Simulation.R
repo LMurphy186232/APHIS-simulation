@@ -117,7 +117,7 @@ survey_radius <- 7290
 #prescribed_survey <- data.frame(
 #  year = c(7, 7, 7, 8, 9),
 #  unit = c("LIB_107", "LIB_23", "LIB_417", "LIB_78", "LIB_421"))
-#prescribed_survey <- NULL # to not have prescribed surveys
+prescribed_survey <- NULL # to not have prescribed surveys
 
 # Radius, around each found infested tree, where uninfested host trees will
 # be removed. If zero, there will be no unifested host removal. This is in feet
