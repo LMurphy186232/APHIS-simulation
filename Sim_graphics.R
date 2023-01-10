@@ -45,7 +45,7 @@ makeMaps <- function(start_year, end_year, filename) {
       points(trees$x[x], trees$y[x], pch=20, col="red")
     }
     x = which(trees$year_removed  >= year & 
-                trees$year_infested <= year)
+              trees$year_infested <= year)
     if (length(x) > 0) {
       points(trees$x[x], trees$y[x], pch=20, col="pink")
     }

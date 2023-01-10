@@ -267,6 +267,53 @@ for (year in start_year:end_year) {
     }
     #-------------------------------------------------------------------------#
     
+    
+    #-------------------------------------------------------------------------#
+    # Management: removal of uninfested host trees near removed trees. Use the
+    # same method as with surveying
+    #-------------------------------------------------------------------------#
+    if (host_removal_radius > 0 & any(trees$year_removed == year, na.rm=T)) {
+      detected_this_year <- which(trees$year_removed == year)
+      # If we have just a ton, limit it to 500 to avoid killing gBuffer
+      if (length(detected_this_year) > 500) {
+        detected_this_year <- 
+          detected_this_year[sample(1:length(detected_this_year), 500)]
+      }
+      
+      # Create the shapefile of survey regions based on the locations of
+      # the detected trees
+      xcol = which(names(trees) == "x")
+      ycol = which(names(trees) == "y")
+      points <- SpatialPoints(trees[detected_this_year,c(xcol, ycol)])
+      proj4string(points) <- proj4string(trees)
+      if (length(points) == 0) stop("BAD")
+      ss <- st_buffer(st_as_sf(points), dist=host_removal_radius)
+      
+      # Identify which trees are within the distance of a tree removed this
+      # year
+      x <- over(trees, as(st_geometry(ss), "Spatial"))
+      
+      # Only take trees that have not been removed already
+      to_remove <- !is.na(x) & is.na(trees$year_removed)
+        
+      if (sum(to_remove) > 0 && trees_left_in_budget > 0) {
+        
+        # Stay within budget. If we can't remove everything, pick which ones to 
+        # remove, random selection
+        if (sum(to_remove) > trees_left_in_budget) {
+          x <- which(to_remove)
+          x <- sample(x, trees_left_in_budget)
+          to_remove <- rep(FALSE, length(to_remove))
+          to_remove[x] <- TRUE
+        }
+        if (sum(to_remove) > 0) {
+          trees$year_removed[which(to_remove)] <- year
+          
+          # Track what we've removed so far, in case there's a budget
+          trees_left_in_budget <- trees_left_in_budget - sum(to_remove)
+        }
+      }
+    }
   }
   
   #---------------------------------------------------------------------------#

@@ -96,7 +96,8 @@ max_trees_removed_per_year <- 100000000
 
 # Year to begin any management. Allows for a spin-up period. Management is not
 # guaranteed to start this year - depending on probabilities, the 
-# infestation may yet go unnoticed for a while longer. Ignored if the
+# infestation may yet go unnoticed for a while longer. Ignored if surveys
+# are specified.
 year_to_begin_management <- 1
 
 # Number of trees to randomly select for infestation to start the outbreak
@@ -113,10 +114,15 @@ survey_radius <- 7290
 # a field in the trees data frame called "unit". You can also replace this line
 # with the reading of a text file with this data. Make it have fields called 
 # "year" and "unit".
-prescribed_survey <- data.frame(
-  year = c(1, 1, 1, 2, 4),
-  unit = c("LIB_107", "LIB_23", "LIB_417", "LIB_78", "LIB_421"))
+#prescribed_survey <- data.frame(
+#  year = c(7, 7, 7, 8, 9),
+#  unit = c("LIB_107", "LIB_23", "LIB_417", "LIB_78", "LIB_421"))
 #prescribed_survey <- NULL # to not have prescribed surveys
+
+# Radius, around each found infested tree, where uninfested host trees will
+# be removed. If zero, there will be no unifested host removal. This is in feet
+# to match the removal radius units.
+host_removal_radius <- 0
 
 # Random seed. If this is not NULL, then the random number generator will be
 # set to this value (should be a small integer) and multiple iterations of the
